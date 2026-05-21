@@ -1,5 +1,7 @@
 # Implementation-of-MC-prediction-for-estimating-the-action-value-function.
 
+## Date : 
+
 ## Aim
 
 To implement the Monte Carlo (MC) Prediction algorithm for estimating the action-value function \(Q(s,a)\) using sampled episodes and to analyze the learned action values in a Grid World environment.
@@ -58,6 +60,80 @@ Monte Carlo methods estimate action values by averaging returns obtained after v
 ## Program
 
 ```python
+#Implementation of MC prediction for estimating the action-value function.
+import numpy as np
+from collections import defaultdict
+import gymnasium as gym
+
+env = gym.make("FrozenLake-v1", is_slippery=False)
+
+gamma = 0.9
+episodes = 5000
+
+# Action-value function
+Q = defaultdict(float)
+
+# Returns storage
+returns = defaultdict(list)
+
+# Random policy
+def policy(state):
+    return env.action_space.sample()
+
+# Generate episode
+def generate_episode():
+
+    episode = []
+
+    state, _ = env.reset()
+
+    done = False
+
+    while not done:
+
+        action = policy(state)
+
+        next_state, reward, terminated, truncated, _ = env.step(action)
+
+        done = terminated or truncated
+
+        episode.append((state, action, reward))
+
+        state = next_state
+
+    return episode
+
+# Monte Carlo Prediction
+for ep in range(episodes):
+
+    episode = generate_episode()
+
+    G = 0
+
+    visited_pairs = set()
+
+    # Traverse backward
+    for t in reversed(range(len(episode))):
+
+        state, action, reward = episode[t]
+
+        G = gamma * G + reward
+
+        # First-visit MC
+        if (state, action) not in visited_pairs:
+
+            returns[(state, action)].append(G)
+
+            Q[(state, action)] = np.mean(returns[(state, action)])
+
+            visited_pairs.add((state, action))
+
+# Print Q values
+print("\nAction Value Function:\n")
+
+for key in Q:
+    print(f"State-Action {key}: {Q[key]:.3f}")
+
 
 ```
 
@@ -65,10 +141,9 @@ Monte Carlo methods estimate action values by averaging returns obtained after v
 
 ## Output
 
-```text
+<img width="424" height="499" alt="image" src="https://github.com/user-attachments/assets/08bcb67d-e236-44d2-8164-c2e3d2299bd2" />
+<img width="426" height="451" alt="image" src="https://github.com/user-attachments/assets/d05536ab-7e6f-475f-91b9-bb19200f9ec1" />
 
-
-```
 
 ---
 
@@ -78,11 +153,3 @@ Thus, the Monte Carlo Prediction algorithm was successfully implemented for esti
 
 ---
 
-
----
-
-
-
----
-
----
